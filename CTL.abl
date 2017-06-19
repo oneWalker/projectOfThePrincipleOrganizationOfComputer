@@ -1,0 +1,128 @@
+﻿MODULE LKE     
+
+TITLE 'hard-wired control unit'    
+
+"INPUT                         
+	CLR PIN 3;	"CLR=CLR#
+        MF,T1,W1,W2,W3,W4 PIN 5..10;
+	IR4,IR5,IR6,IR7 PIN 12..15;
+	SWC,SWB,SWA,C PIN 16,26..28;
+
+"OUTPUT                       
+	MF1,SST0 NODE ISTYPE 'COM';
+	RUN,ST0 NODE ISTYPE 'REG';
+	LDIR,LDPC,PC_ADD,M4 PIN 30..33 ISTYPE 'COM'; 
+	LDAR1,AR1_INC,M3,CEL,LRW PIN 35..39 ISTYPE 'COM';
+	LDER,SW_BUS,RS_BUS,WRD PIN 45..48 ISTYPE 'COM';	"RS_BUS=RS_BUS#,SW_BUS=SW_BUS#,CEL=CEL#
+	LDDR1,S2,S1,S0,ALU_BUS PIN 52..56 ISTYPE 'COM';
+	TJ,SKIP,PC_INC PIN 69,70,71 ISTYPE 'COM';
+	CLK = .C.;
+
+EQUATIONS
+	MF1 = !CLR & MF # T1;
+	RUN := CLR & !ST0 # CLR & RUN;
+	RUN.CLK = MF1; 
+	SST0 = !ST0 & RUN & W4;
+	ST0 := CLR & SST0 # CLR & ST0;
+	ST0.CLK = MF1;
+
+	LDIR = ST0 & !SWC & !SWB & !SWA & W1
+		# ST0 & !SWC & SWB & SWA & W2
+		# ST0 & SWC & !SWB & !SWA & W2;
+	
+		
+	SKIP = !ST0 & !SWC & !SWB & !SWA & W1
+		# !ST0 & !SWC & !SWB & SWA & W1
+		# !ST0 & !SWC & SWB & !SWA & W1
+		# !ST0 & !SWC & SWB & SWA & W1
+		# !ST0 & SWC & !SWB & !SWA & W1
+		# ST0 & !SWC & !SWB & SWA & W1
+		# ST0 & !SWC & SWB & !SWA & W1
+		# ST0 & SWC & !SWB & !SWA & W2
+		# ST0 & !SWC & !SWB & !SWA & !IR7 & IR6 & !IR5 & !IR4 & W2
+		# ST0 & !SWC & !SWB & !SWA & IR7 & !IR6 & !IR5 & !IR4 & W2
+		# ST0 & !SWC & !SWB & !SWA & IR7 & !IR6 & !IR5 & IR4 & W2
+		# ST0 & !SWC & !SWB & !SWA & !IR7 & IR6 & IR5 & !IR4 & W2;
+  
+				
+       CEL =! ( ST0 & !SWC & !SWB & SWA & W1
+            # ST0 & !SWC & SWB & !SWA & W1
+            # ST0 & !SWC & SWB & SWA & W1
+            # ST0 & SWC & !SWB & !SWA & W1
+            # ST0 & !SWC & !SWB & !SWA & !IR7 & IR6 & !IR5 & IR4 & W3
+            # ST0 & !SWC & !SWB & !SWA & !IR7 & IR6 & !IR5 & !IR4 & W4 ) ; 
+       
+      LDDR1 = ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & !IR5 & !IR4 & W2
+            # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & !IR5 & IR4 & W2
+            # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & IR5 & !IR4 & W2
+            # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & IR5 & IR4 & W2
+            # ST0 & !SWC & !SWB & !SWA & !IR7 &  IR6 & !IR5 & !IR4 & W2;
+   
+      SW_BUS = !( !ST0 & !SWC & !SWB & SWA & W4
+              # !ST0 & !SWC & SWB & !SWA & W4
+	       # !ST0 & !SWC & SWB & SWA  & W4
+              # !ST0 & SWC & !SWB & !SWA & W4
+              # !ST0 & !SWC & !SWB & !SWA & W4
+              # ST0 & !SWC & SWB & !SWA & W1
+              # ST0 & !SWC & SWB & SWA & W1
+              # ST0 & !SWC & SWB & SWA & W3
+              # ST0 & SWC & !SWB & !SWA & W1) ;
+      LRW =  ST0 &  !SWC & !SWB & SWA & W1
+           # ST0 & !SWC & !SWB & !SWA & !IR7 & IR6 & !IR5 & IR4 & W3;
+     LDAR1 =ST0 & !SWC & !SWB & !SWA & !IR7 & IR6 & !IR5 & IR4 & W2
+           # ST0 & !SWC & !SWB & !SWA & !IR7 & IR6 & !IR5 & !IR4 & W2
+           # ST0 & !SWC & !SWB & !SWA & W1
+           # !ST0 & !SWC & SWB & !SWA & W4
+           # !ST0 & !SWC & SWB & SWA & W4
+           # !ST0 & SWC & !SWB & !SWA & W4
+           # !ST0 & !SWC & ! SWB & SWA & W4;
+    WRD= ST0 & !SWC & SWB & SWA & W4
+        # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & !IR5 & !IR4 & W4
+        # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & !IR5 & IR4 & W4
+        # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & IR5 & !IR4 & W4
+        # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & IR5 & IR4 & W4
+        # ST0 & !SWC & !SWB & !SWA & !IR7 & IR6 & !IR5 & IR4 & W4;
+    TJ= ST0 & !SWC & !SWB & SWA & W1
+        # ST0 & !SWC & SWB & !SWA & W4
+        # ST0 & !SWC & SWB & SWA & W2
+        # ST0 & !SWC & SWB & SWA & W4
+        # ST0 & SWC & !SWB & !SWA & W4
+        # ST0 & !SWC & !SWB & !SWA & !IR7 & IR6 & IR5 & !IR4 & W4
+        # !ST0 & !SWC & SWB & !SWA & W4
+        # !ST0 & !SWC & SWB & SWA & W4
+        # !ST0 & SWC & !SWB & !SWA & W4;
+        
+     AR1_INC=ST0 & !SWC & !SWB & SWA & W4
+            # ST0 & !SWC & SWB & !SWA & W4;
+     LDER =ST0 & !SWC & SWB &SWA & W3
+         # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & !IR5 & !IR4 & W3
+         # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & !IR5 & IR4 & W3
+         # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & IR5 & !IR4 & W3
+         # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & IR5 & IR4 & W3
+         # ST0 & !SWC & !SWB & !SWA & !IR7 & IR6 & !IR5 & IR4 & W3;
+    RS_BUS = ! ( ST0 & SWC & !SWB & !SWA & W4
+          # ST0 & !SWC & !SWB & !SWA & !IR7 & IR6 & !IR5 & IR4 & W2
+          # ST0 & !SWC & !SWB & !SWA & !IR7 & IR6 & !IR5 & !IR4 & W2
+          # ST0 & !SWC & !SWB & !SWA & IR7 & !IR6 & !IR5 & !IR4 & W4 ) ;
+    LDPC =  ST0 & !SWC & !SWB & !SWA & IR7 & !IR6 & !IR5 & !IR4 & W4
+          # ST0 & !SWC & !SWB & !SWA & IR7 & !IR6 & !IR5 & IR4 & W4 & C
+          # !ST0 & !SWC & !SWB & !SWA & W4;
+    PC_INC = ST0 & !SWC & !SWB & !SWA & W1;
+    M4 = ST0 & !SWC & !SWB & !SWA & IR7 & !IR6 & !IR5 & !IR4 & W4
+      # !ST0 & !SWC & !SWB & !SWA & W4;
+
+    M3 = !ST0 & !SWC & SWB & SWA & W4
+       # !ST0 & SWC & !SWB & !SWA & W4; 
+    ALU_BUS = ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & !IR5 & !IR4 & W3
+       # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & !IR5 & IR4 & W3
+       # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & IR5 & !IR4 & W3
+       # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & IR5 & IR4 & W3
+       # ST0 & !SWC & !SWB & !SWA & !IR7 & IR6 & !IR5 & !IR4 & W4;
+    PC_ADD = ST0 & !SWC & !SWB & !SWA  & IR7 & !IR6 & !IR5 & IR4 & W4 & C;
+    
+    S2 = ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & IR5 & !IR4 & W3;
+
+    S1 = ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & !IR5 & !IR4 & W3
+        # ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & !IR5 & IR4 & W3;
+    S0 = ST0 & !SWC & !SWB & !SWA & !IR7 & !IR6 & !IR5 & IR4 & W3; 
+END
